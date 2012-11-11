@@ -2,8 +2,6 @@
 import vizact
 import SerialPort_win
 import viztask
-import time
-import numpy as np
 
 
 # ------ Configuration for the lumina box ------------
@@ -18,6 +16,7 @@ LEFT_BUTTON_UP     = "1" #2
 TRIGGER_EVENT = viz.getEventID("PULSE_EVENT")
 RIGHT_BUTTON_EVENT = viz.getEventID("RIGHT_B_EVENT")
 LEFT_BUTTON_EVENT = viz.getEventID("LEFT_B_EVENT")
+FIRST_TRIGGER_EVENT = viz.getEventID("FIRST_PULSE_EVENT")
 # ----------------------------------------------------
 
 # ----- Configuration for fake scanner triggers ------
@@ -36,6 +35,7 @@ class FmriTrigger(object):
 		self.port = SerialPort_win.SerialPort(DEVICE,TIMEOUT,SPEED)
 		self.received_triggers = []
 		self.events=[]
+		self.event_count = 0
 
 	def start(self):
 		vizact.onupdate(0,self.check_pulse)
@@ -79,6 +79,8 @@ class FakeFmriTrigger(FmriTrigger):
 		triggertime=viz.tick()
 		viz.sendEvent(LEFT_BUTTON_EVENT)
 		self.events.append((LEFT_BUTTON_DOWN,triggertime))
+
+
 
 if __name__ == "__main__":
 	viz.go()
