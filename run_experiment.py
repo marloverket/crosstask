@@ -1,6 +1,6 @@
 ﻿import viz, viztask
 from cross_subject import CrossSubject
-from crosstrial import cross_trial
+from crosstrial import cross_block
 import fmri_trigger
 global subj, trigger
 from design.sequence import create_full_experiment
@@ -28,9 +28,13 @@ def experiment():
 	# -- Where will the trigger pulses be coming from?
 	yield get_trigger()
 	
+	# -- Load the timings for this experiment
+	subj.get_experiment()
+	
 	# -- Start the experiment, waiting for a trigger
-	for block in subj.blocks:
-		yield cross_block(*trial)
+	for nblock,block in enumerate(subj.blocks):
+		blockdata = yield cross_block(block)
+		subj.add_block_data(nblock,blockdata)
 	
 	# -- write the data we just collected to text
 	subj.write_data()

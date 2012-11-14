@@ -16,7 +16,7 @@ N_TRIALS_PER_BLOCK  = 8
 # What is the minimum time a trial might take?
 MIN_TRIAL_DURATION  = 1
 # How long is the rest block?
-REST_DURATION       = 30
+REST_DURATION       = 10
 # Number of inter-trial intervals in a block
 N_ITIs_PER_BLOCK = N_TRIALS_PER_BLOCK - 1
 # Minimum ITI length

@@ -10,14 +10,14 @@ hbar = viz.addTexture("images/hbar.png")
 vbar = viz.addTexture("images/vbar.png")
 cross = viz.add("images/cross.png")
 # Text for feedback
-block_text = viz.addText("TEXT",parent=viz.SCREEN)
+block_text = viz.addText("",parent=viz.SCREEN)
 block_text.setPosition(0.5,0.8)
 block_text.alignment(viz.ALIGN_CENTER_CENTER)
 block_text.font("times.ttf")
 
 #Add quad to screen
 quad = viz.addTexQuad( viz.SCREEN , pos=(0.5,0.5,0) , scale=(5,5,5) )
-quad.texture(cross)
+#quad.texture(cross)
 
 def success_display():
 	 block_text.message("Success")
@@ -92,6 +92,7 @@ def cross_trial(start_time, wait_time, rt_deadline, remove, message=""):
 	quad.texture(cross)
 	descr["success"]    = success
 	descr["rt"]         = reactionTime
+	descr["rt_deadline"]= rt_deadline
 	descr["changetime"] = d.time
 	viztask.returnValue(descr)
 	
@@ -100,12 +101,16 @@ def cross_block(list_of_trials):
 	results = []
 	successes = 0
 	# Keep the duration text visible for the first trial
-	results += yield cross_trial(*list_of_trials[0],
+	res = yield cross_trial(*list_of_trials[0],
 			message="DEADLINE: %.2f"%list_of_trials[0][2])
-	successes += results["success"][0]
+	print "type res:", type(res)
+	print res
+	results.append(res)
+	successes += results[0]["success"]
 	# Loop over the rest of the trials
 	for trial in list_of_trials[1:]:
-		results += yield cross_trial(*trial)
+		res = yield cross_trial(*trial)
+		results.append(res)
 		successes += results[-1]["success"]
 	# Display successes at the end
 	yield end_block(successes,len(list_of_trials))
@@ -119,7 +124,9 @@ if  __name__ == "__main__":
 	viz.clearcolor(viz.GRAY)
 	from design.sequence import create_full_experiment
 	def multitrial():
+		results = []
 		blocks = create_full_experiment([0.3, 0.2, 0.4, 0.5])
 		for block in blocks:
-			yield cross_block(block)
-	viztask.schedule(multitrial())
+			results += yield cross_block(block)
+		viztask.returnValue(results)
+	res = viztask.schedule(multitrial())

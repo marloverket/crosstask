@@ -20,7 +20,7 @@ info_box.visible(viz.OFF)
 
 class Subject(object):
 	def __init__(self):
-		self.init_time = datetime.now()
+		self.init_time = datetime.now().strftime("%Y.%m.%d.%H.%M")
 		self.time_offset = -1
 		
 	def set_time_offset(self, timestamp):
@@ -38,9 +38,9 @@ class Subject(object):
 		"""
 		self.show_gui()
 		yield viztask.waitButtonUp(run_button)
-		self.subject_id = id_box.get()
-		self.run_num = run_box.get()
-		self.day_num = day_box.get()
+		self.subject_id = "S%03i"%int(id_box.get())
+		self.run_num = "R%02i"%int(run_box.get())
+		self.day_num = "D%02i"%int(day_box.get())
 		scanner = scan_box.get()
 		self.is_scanning = (scanner == "1")
 		info_box.remove()

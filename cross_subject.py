@@ -1,7 +1,9 @@
 ﻿from subject import Subject
 import os
+from datetime import datetime
 from design.sequence import create_full_experiment, DEFAULT_DEADLINE, N_TRIALS_PER_BLOCK
 design_dir = os.path.join(os.path.dirname(__file__),"design_files")
+rt_dir = os.path.join(os.path.dirname(__file__),"rt_data")
 
 # ----- Can't get numpy installed on my development version of vizard
 def inverse_normcdf(percentile,mu,sigma):
@@ -41,7 +43,8 @@ class CrossSubject(Subject):
 		super(Subject,self).__init__()
 		# deadline in seconds or percentage?
 		self.experimental_deadlines = experimental_deadlines
-		
+		self.collected_data = []
+	
 	def get_rt_deadlines(self):
 		""" Reads a test file with the RT deadlines for each block.
 		If the specified RT's are in seconds"""
@@ -71,7 +74,6 @@ class CrossSubject(Subject):
 		return [ inverse_normcdf(dl,self.rt_mean,self.rt_sd) for dl \
 					in deadlines ]
 		
-		
 	def get_experiment(self):
 		""" Looks for a file for this run
 		"""
@@ -87,7 +89,39 @@ class CrossSubject(Subject):
 		else:
 			self.blocks = design_parse(self.design_file)
 	
-			
+	def add_block_data(self,blocknum,data):
+		for dat in data:
+			dat["blocknum"] = blocknum
+			dat["subject"] = self.subject_id
+			self.collected_data.append(dat)
+	
+	def write_data(self):
+		"""Writes out data for analysis in R
+		"""
+		output_file = ".".join(
+			[self.subject_id, self.day_num, self.run_num,
+			datetime.now().strftime("%Y.%m.%d.%H.%M"), "dat"])
+		self.data_file = os.path.join(rt_dir,output_file)
+		fop = open(self.data_file,"w")
+		data_fmt = [("subject",      "%s"),
+					("rt",           "%.4f"),
+					("changetime",   "%.3f"),
+					("blocknum",     "%i"),
+					("success",      "%i"),
+					("onset",        "%.3f"),
+					("crossbar",     "%s"),
+					("duration",	 "%.3f"),
+					("rt_deadline",  "%.3f")
+					]
+					
+		header = "\t".join([a for a,b in data_fmt])
+		trials = []
+		for trial in self.collected_data:
+			trials.append("\t".join([fmt%trial[key] for key,fmt in data_fmt]))
+		fop.write("\n".join([ header ] + trials))
+		fop.close()
+		print "Wrote", output_file
+
 if __name__=="__main__":
 	import viz,viztask
 	viz.go()
