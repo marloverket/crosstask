@@ -14,6 +14,7 @@ block_text = viz.addText("",parent=viz.SCREEN)
 block_text.setPosition(0.5,0.8)
 block_text.alignment(viz.ALIGN_CENTER_CENTER)
 block_text.font("times.ttf")
+MESSAGE_TIME = 1
 
 #Add quad to screen
 quad = viz.addTexQuad( viz.SCREEN , pos=(0.5,0.5,0) , scale=(5,5,5) )
@@ -21,14 +22,19 @@ quad = viz.addTexQuad( viz.SCREEN , pos=(0.5,0.5,0) , scale=(5,5,5) )
 
 def success_display():
 	 block_text.message("Success")
-	 
+	 vizact.ontimer2(rate=MESSAGE_TIME, repeats=0,func=clear_text)
 	
 def fail_display():
 	block_text.message("Failure")
+	vizact.ontimer2(rate=MESSAGE_TIME, repeats=0,func=clear_text)
 	
 def end_block(correct,ntrials):
 	block_text.message("SCORE: %i/%i"%(correct,ntrials))
-	viztask.waitTime(1)
+	#block_text.visible(True)
+	#viztask.waitTime(1)
+	#block_text.visible(False)
+	
+def clear_text():
 	block_text.message("")
 
 def cross_trial(start_time, wait_time, rt_deadline, remove, message=""):
@@ -55,9 +61,9 @@ def cross_trial(start_time, wait_time, rt_deadline, remove, message=""):
 	else:
 		while viz.tick() < start_time:
 			yield viz.waitTime(0.01)
-	# ---- If there's a message, set it to persist throughout 
-	#	   the trial
+	# ---- If there's a message, display it for MESSAGE_TIME
 	block_text.message(message)
+	vizact.ontimer2(rate=MESSAGE_TIME, repeats=0,func=clear_text)
 	
 	# ---- Flash the cue
 	quad.texture(cue)
@@ -89,6 +95,7 @@ def cross_trial(start_time, wait_time, rt_deadline, remove, message=""):
 	else:
 		success = 0
 		yield fail_display()
+	
 	quad.texture(cross)
 	descr["success"]    = success
 	descr["rt"]         = reactionTime

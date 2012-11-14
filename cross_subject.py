@@ -114,10 +114,10 @@ class CrossSubject(Subject):
 					("rt_deadline",  "%.3f")
 					]
 					
-		header = "\t".join([a for a,b in data_fmt])
+		header = "\t".join([a for a,b in data_fmt] + ["trialnum"])
 		trials = []
-		for trial in self.collected_data:
-			trials.append("\t".join([fmt%trial[key] for key,fmt in data_fmt]))
+		for trialnum,trial in enumerate(self.collected_data):
+			trials.append("\t".join([fmt%trial[key] for key,fmt in data_fmt]+["%i"%trialnum]))
 		fop.write("\n".join([ header ] + trials))
 		fop.close()
 		print "Wrote", output_file
