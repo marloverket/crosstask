@@ -33,11 +33,14 @@ def experiment():
 	
 	# -- Start the experiment, waiting for a trigger
 	for nblock,block in enumerate(subj.blocks):
-		blockdata = yield cross_block(block)
+		blockdata = yield cross_block(block,training=subj.is_training)
 		subj.add_block_data(nblock,blockdata)
 	
 	# -- write the data we just collected to text
 	subj.write_data()
+	
+	# -- Close the program
+	viz.quit()
 
 if __name__=="__main__":
 	viz.go()

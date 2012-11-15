@@ -2,7 +2,7 @@
 The disappearing cross task reimplemented from Blascovich & Katkin 1993.
 mattcieslak@gmail.com
 """
-from fmri_trigger import TRIGGER_EVENT
+from fmri_trigger import TRIGGER_EVENT, RIGHT_BUTTON_EVENT, LEFT_BUTTON_EVENT
 import viz, vizact, viztask, vizinfo
 # Images
 cue = viz.addTexture("images/cue.png")
@@ -16,10 +16,23 @@ block_text.alignment(viz.ALIGN_CENTER_CENTER)
 block_text.font("times.ttf")
 MESSAGE_TIME = 1
 
+# ---------- Configure so responses are mapped to cross components --
+HBAR_RESPONSE = viztask.waitEvent(LEFT_BUTTON_EVENT,all=True)
+VBAR_RESPONSE = viztask.waitEvent(RIGHT_BUTTON_EVENT,all=True)
+# -------------------------------------------------------------------
+
 #Add quad to screen
 quad = viz.addTexQuad( viz.SCREEN , pos=(0.5,0.5,0) , scale=(5,5,5) )
 #quad.texture(cross)
-
+def training_display(rt,acc):
+	print "acc",acc
+	if acc:
+		msg = "RIGHT"
+	else:
+		msg = "WRONG"
+	block_text.message(msg + " %.2fs"%rt)
+	vizact.ontimer2(rate=MESSAGE_TIME, repeats=0,func=clear_text)
+	
 def success_display():
 	 block_text.message("Success")
 	 vizact.ontimer2(rate=MESSAGE_TIME, repeats=0,func=clear_text)
@@ -37,7 +50,8 @@ def end_block(correct,ntrials):
 def clear_text():
 	block_text.message("")
 
-def cross_trial(start_time, wait_time, rt_deadline, remove, message=""):
+def cross_trial(start_time, wait_time, rt_deadline, remove, 
+					message="",training=False):
 	""" Implements a single trial
 	Parameters
 	==========
@@ -61,6 +75,7 @@ def cross_trial(start_time, wait_time, rt_deadline, remove, message=""):
 	else:
 		while viz.tick() < start_time:
 			yield viz.waitTime(0.01)
+			
 	# ---- If there's a message, display it for MESSAGE_TIME
 	block_text.message(message)
 	vizact.ontimer2(rate=MESSAGE_TIME, repeats=0,func=clear_text)
@@ -81,42 +96,59 @@ def cross_trial(start_time, wait_time, rt_deadline, remove, message=""):
 	#Save display time
 	displayTime = d.time
 
-	#Wait for keyboard reaction
-	d = yield viztask.waitKeyDown(None)
+	#Wait for a reaction
+	reaction = yield viztask.waitAny( 
+		[HBAR_RESPONSE,
+		 VBAR_RESPONSE] )
+	time_at_response, = reaction.data.data[0]
 
+	# How did they do??
+	# -> Hbar remains
+	if reaction.condition is HBAR_RESPONSE:
+		descr["acc_success"] = remove == "vbar"
+		response = "hbar"
+	# -> vbar remains
+	if reaction.condition is VBAR_RESPONSE:
+		descr["acc_success"] = remove == "hbar"
+		response = "vbar"
+		
+	print "removed:", remove,"responded:",response
 	#Calculate reaction time
-	reactionTime = d.time - displayTime
-
-	#Print reaction time
-	print 'Reaction time:',reactionTime
-	if reactionTime < rt_deadline:
-		success = 1
-		yield success_display()
+	reactionTime = time_at_response - displayTime
+	descr["speed_success"] = reactionTime < rt_deadline
+	success = descr["speed_success"] and descr["acc_success"]
+	# What sort of feedback to give?
+	if training:
+		# In training blocks, show the rt
+		yield training_display(reactionTime,descr["acc_success"])
 	else:
-		success = 0
-		yield fail_display()
+		if success:
+			yield success_display()
+		else:
+			yield fail_display()
 	
 	quad.texture(cross)
+	descr["response"]   = response
 	descr["success"]    = success
 	descr["rt"]         = reactionTime
 	descr["rt_deadline"]= rt_deadline
 	descr["changetime"] = d.time
 	viztask.returnValue(descr)
 	
-def cross_block(list_of_trials):
+def cross_block(list_of_trials,training=False):
 	# keep track of trial results
 	results = []
 	successes = 0
 	# Keep the duration text visible for the first trial
 	res = yield cross_trial(*list_of_trials[0],
-			message="DEADLINE: %.2f"%list_of_trials[0][2])
+			message="DEADLINE: %.2f"%list_of_trials[0][2],training=training)
 	print "type res:", type(res)
 	print res
 	results.append(res)
 	successes += results[0]["success"]
 	# Loop over the rest of the trials
 	for trial in list_of_trials[1:]:
-		res = yield cross_trial(*trial)
+		res = yield cross_trial(*trial,training=training)
 		results.append(res)
 		successes += results[-1]["success"]
 	# Display successes at the end
@@ -134,6 +166,6 @@ if  __name__ == "__main__":
 		results = []
 		blocks = create_full_experiment([0.3, 0.2, 0.4, 0.5])
 		for block in blocks:
-			results += yield cross_block(block)
+			results += yield cross_block(block,training=True)
 		viztask.returnValue(results)
 	res = viztask.schedule(multitrial())

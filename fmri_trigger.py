@@ -49,10 +49,10 @@ class FmriTrigger(object):
 				self.event_count += 1
 				self.received_triggers.append(triggertime)
 			elif state == RIGHT_BUTTON_DOWN:
-				viz.sendEvent(RIGHT_BUTTON_EVENT)
+				viz.sendEvent(RIGHT_BUTTON_EVENT,triggertime)
 				self.events.append((RIGHT_BUTTON_DOWN,triggertime))
 			elif state == LEFT_BUTTON_DOWN:
-				viz.sendEvent(LEFT_BUTTON_EVENT)
+				viz.sendEvent(LEFT_BUTTON_EVENT,triggertime)
 				self.events.append((LEFT_BUTTON_DOWN,triggertime))
 			
 class FakeFmriTrigger(FmriTrigger):
@@ -64,20 +64,21 @@ class FakeFmriTrigger(FmriTrigger):
 		
 	def sendit(self):
 		# start a timer that sends fake triggers
-		sendit = viz.sendEvent(TRIGGER_EVENT)
-		self.received_triggers.append(viz.tick())
+		triggertime = viz.tick()
+		sendit = viz.sendEvent(TRIGGER_EVENT,triggertime)
+		self.received_triggers.append(triggertime)
 		
 	def start(self):
 		vizact.ontimer(2,self.sendit)
 		
 	def sendright(self):
 		triggertime=viz.tick()
-		viz.sendEvent(RIGHT_BUTTON_EVENT)
+		viz.sendEvent(RIGHT_BUTTON_EVENT,triggertime)
 		self.events.append((RIGHT_BUTTON_DOWN,triggertime))
 		
 	def sendleft(self):
 		triggertime=viz.tick()
-		viz.sendEvent(LEFT_BUTTON_EVENT)
+		viz.sendEvent(LEFT_BUTTON_EVENT,triggertime)
 		self.events.append((LEFT_BUTTON_DOWN,triggertime))
 
 

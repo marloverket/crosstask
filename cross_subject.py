@@ -103,15 +103,17 @@ class CrossSubject(Subject):
 			datetime.now().strftime("%Y.%m.%d.%H.%M"), "dat"])
 		self.data_file = os.path.join(rt_dir,output_file)
 		fop = open(self.data_file,"w")
-		data_fmt = [("subject",      "%s"),
-					("rt",           "%.4f"),
-					("changetime",   "%.3f"),
-					("blocknum",     "%i"),
-					("success",      "%i"),
-					("onset",        "%.3f"),
-					("crossbar",     "%s"),
-					("duration",	 "%.3f"),
-					("rt_deadline",  "%.3f")
+		data_fmt = [("subject",      "%s"),             # Subject ID
+					("rt",           "%.4f"),			# Response time
+					("changetime",   "%.3f"),			# Time display changed
+					("blocknum",     "%i"),				# Block Number
+					("success",      "%i"),				# Speed & Accuracy?
+					("speed_success","%i"),				# Fast enough?
+					("acc_success",  "%i"),				# Accurate?
+					("onset",        "%.3f"),			# Circle cue appears
+					("crossbar",     "%s"),				# Disappearing part
+					("duration",	 "%.3f"),			# Time b/w cue & target
+					("rt_deadline",  "%.3f")			# Required Speed
 					]
 					
 		header = "\t".join([a for a,b in data_fmt] + ["trialnum"])

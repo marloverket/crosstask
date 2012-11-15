@@ -14,7 +14,8 @@ info_box.title('Participant Info')
 id_box = info_box.add(viz.TEXTBOX,'Participant ID')
 day_box = info_box.add(viz.TEXTBOX, 'Day')
 run_box = info_box.add(viz.TEXTBOX, 'Run Number')
-scan_box = info_box.add(viz.TEXTBOX,'Scanner')
+scan_box = info_box.add(viz.CHECKBOX,'Scanner')
+training_box = info_box.add(viz.CHECKBOX,'Training?')
 run_button = info_box.add(viz.BUTTON,'Run')
 info_box.visible(viz.OFF)
 
@@ -41,8 +42,8 @@ class Subject(object):
 		self.subject_id = "S%03i"%int(id_box.get())
 		self.run_num = "R%02i"%int(run_box.get())
 		self.day_num = "D%02i"%int(day_box.get())
-		scanner = scan_box.get()
-		self.is_scanning = (scanner == "1")
+		self.is_scanning = bool(scan_box.get())
+		self.is_training = bool(training_box.get())
 		info_box.remove()
 		
 	def show_gui(self):
