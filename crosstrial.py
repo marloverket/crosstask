@@ -9,6 +9,10 @@ cue = viz.addTexture("images/cue.png")
 hbar = viz.addTexture("images/hbar.png")
 vbar = viz.addTexture("images/vbar.png")
 cross = viz.add("images/cross.png")
+# Sounds
+correct_sound   = viz.addAudio("images/beep-8.wav")
+incorrect_sound = viz.addAudio("images/beep-3.wav")
+
 # Text for feedback
 block_text = viz.addText("",parent=viz.SCREEN)
 block_text.setPosition(0.5,0.8)
@@ -28,18 +32,21 @@ def training_display(rt,acc):
 	print "acc",acc
 	if acc:
 		msg = "RIGHT"
+		correct_sound.play()
 	else:
 		msg = "WRONG"
+		incorrect_sound.play()
 	block_text.message(msg + " %.2fs"%rt)
 	vizact.ontimer2(rate=MESSAGE_TIME, repeats=0,func=clear_text)
 	
 def success_display():
-	 block_text.message("Success")
-	 vizact.ontimer2(rate=MESSAGE_TIME, repeats=0,func=clear_text)
-	
+	 #block_text.message("Success")
+	 #vizact.ontimer2(rate=MESSAGE_TIME, repeats=0,func=clear_text)
+	 pass
 def fail_display():
-	block_text.message("Failure")
-	vizact.ontimer2(rate=MESSAGE_TIME, repeats=0,func=clear_text)
+	#block_text.message("Failure")
+	#vizact.ontimer2(rate=MESSAGE_TIME, repeats=0,func=clear_text)
+	pass
 	
 def end_block(correct,ntrials):
 	block_text.message("SCORE: %i/%i"%(correct,ntrials))
