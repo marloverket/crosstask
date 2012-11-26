@@ -1,7 +1,7 @@
 ﻿from subject import Subject
 import os
 from datetime import datetime
-from design.sequence import create_full_experiment, DEFAULT_DEADLINE, N_TRIALS_PER_BLOCK
+from design.sequence import create_full_experiment, DEFAULT_DEADLINES, N_TRIALS_PER_BLOCK
 design_dir = os.path.join(os.path.dirname(__file__),"design_files")
 rt_dir = os.path.join(os.path.dirname(__file__),"rt_data")
 
@@ -51,7 +51,7 @@ class CrossSubject(Subject):
 		
 		# Use a fixed RT in a practice block
 		if not self.experimental_deadlines:
-			return [DEFAULT_DEADLINE] * N_TRIALS_PER_BLOCK
+			return DEFAULT_DEADLINES
 		
 		# Read in the RT percentages from a file for this subject
 		design_file = ".".join(

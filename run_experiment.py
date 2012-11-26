@@ -44,7 +44,8 @@ def experiment():
 
 if __name__=="__main__":
 	viz.go()
-	
+	viz.window.setFullscreenMonitor(1)
+	viz.window.setFullscreen(viz.ON)
 	# ------ Options for vizard display
 	viz.vsync(0)
 	viz.setOption('viz.max_frame_rate',60)

@@ -39,17 +39,23 @@ def training_display(rt,acc):
 	block_text.message(msg + " %.2fs"%rt)
 	vizact.ontimer2(rate=MESSAGE_TIME, repeats=0,func=clear_text)
 	
-def success_display():
+def success_display(rt):
 	 #block_text.message("Success")
 	 #vizact.ontimer2(rate=MESSAGE_TIME, repeats=0,func=clear_text)
-	 pass
-def fail_display():
+	 correct_sound.play()
+	 block_text.message("GOOD %.2fs"%rt)
+	 vizact.ontimer2(rate=MESSAGE_TIME, repeats=0,func=clear_text)
+	 
+def fail_display(failtype,rt):
 	#block_text.message("Failure")
 	#vizact.ontimer2(rate=MESSAGE_TIME, repeats=0,func=clear_text)
-	pass
+	incorrect_sound.play()
+	block_text.message(failtype + " %.2fs"%rt)
+	vizact.ontimer2(rate=MESSAGE_TIME, repeats=0,func=clear_text)
 	
 def end_block(correct,ntrials):
 	block_text.message("SCORE: %i/%i"%(correct,ntrials))
+	vizact.ontimer2(rate=MESSAGE_TIME, repeats=0,func=clear_text)
 	#block_text.visible(True)
 	#viztask.waitTime(1)
 	#block_text.visible(False)
@@ -84,8 +90,8 @@ def cross_trial(start_time, wait_time, rt_deadline, remove,
 			yield viz.waitTime(0.01)
 			
 	# ---- If there's a message, display it for MESSAGE_TIME
-	block_text.message(message)
-	vizact.ontimer2(rate=MESSAGE_TIME, repeats=0,func=clear_text)
+	#block_text.message(message)
+	#vizact.ontimer2(rate=MESSAGE_TIME, repeats=0,func=clear_text)
 	
 	# ---- Flash the cue
 	quad.texture(cue)
@@ -119,20 +125,21 @@ def cross_trial(start_time, wait_time, rt_deadline, remove,
 		descr["acc_success"] = remove == "hbar"
 		response = "vbar"
 		
-	print "removed:", remove,"responded:",response
-	#Calculate reaction time
+	# print "removed:", remove,"responded:",response
+	# Calculate reaction time
 	reactionTime = time_at_response - displayTime
 	descr["speed_success"] = reactionTime < rt_deadline
 	success = descr["speed_success"] and descr["acc_success"]
 	# What sort of feedback to give?
-	if training:
+	#if training:
 		# In training blocks, show the rt
-		yield training_display(reactionTime,descr["acc_success"])
+		#yield training_display(reactionTime,descr["acc_success"])
+	#else:
+	if success:
+		yield success_display(reactionTime)
 	else:
-		if success:
-			yield success_display()
-		else:
-			yield fail_display()
+		failtype = "WRONG" if descr["speed_success"] else "TIMEOUT"
+		yield fail_display(failtype, reactionTime)
 	
 	quad.texture(cross)
 	descr["response"]   = response
@@ -146,13 +153,8 @@ def cross_block(list_of_trials,training=False):
 	# keep track of trial results
 	results = []
 	successes = 0
-	# Keep the duration text visible for the first trial
-	res = yield cross_trial(*list_of_trials[0],
-			message="DEADLINE: %.2f"%list_of_trials[0][2],training=training)
-	print "type res:", type(res)
-	print res
-	results.append(res)
-	successes += results[0]["success"]
+	block_text.message("DEADLINE: %.2f"%list_of_trials[0][2])
+	vizact.ontimer2(rate=MESSAGE_TIME, repeats=0,func=clear_text)
 	# Loop over the rest of the trials
 	for trial in list_of_trials[1:]:
 		res = yield cross_trial(*trial,training=training)

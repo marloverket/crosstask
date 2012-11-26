@@ -4,27 +4,32 @@ a mixed-block/event related design (Visscher et al 2003, NeuroImage).
 Currently: no M-sequence. I'll look into this as the time for scanning
 gets closer. For now, it's pseudo-random
 """
+import random
 
 # How long to wait before the first block of trials (seconds)
 INITIAL_WAIT_TIME   = 5
 # Number of blocks that will contain trials
-N_TRIAL_BLOCKS      = 4
+N_TRIAL_BLOCKS      = 2
 # How long should each block last? (seconds)
-BLOCK_DURATION      = 30
+BLOCK_DURATION      = 40
 # How many trials per block?
-N_TRIALS_PER_BLOCK  = 8
+N_TRIALS_PER_BLOCK  = 10
 # What is the minimum time a trial might take?
 MIN_TRIAL_DURATION  = 1
 # How long is the rest block?
-REST_DURATION       = 10
+REST_DURATION       = 20
 # Number of inter-trial intervals in a block
 N_ITIs_PER_BLOCK = N_TRIALS_PER_BLOCK - 1
 # Minimum ITI length
 MIN_ITI_DURATION    = 2
 # What is the default RT deadline if none is specified?
 DEFAULT_DEADLINE    = 1.5
-
-import random
+# ----- 11/25/12 -- Decided we will use varying deadlines each block
+MAX_DEADLINE = 0.9      # Seconds
+MIN_DEADLINE = 0.25    # Seconds
+stepsize = (MAX_DEADLINE-MIN_DEADLINE)/(N_TRIAL_BLOCKS-1)
+DEFAULT_DEADLINES = [(n*stepsize+ MIN_DEADLINE) for n in range(N_TRIAL_BLOCKS)]
+random.shuffle(DEFAULT_DEADLINES) # Shuffle the order
 
 def random_split(time_to_fill,ntimes):
 	"""Given an amount of time, split it into `ntimes` random pieces
